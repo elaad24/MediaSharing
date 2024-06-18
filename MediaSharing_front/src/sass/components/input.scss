@@ -1,0 +1,40 @@
+.input_component {
+  width: 100%;
+
+  .input,
+  .select {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: rgb(113, 109, 109);
+
+    .inputBox {
+      display: flex;
+      img {
+        background-color: white;
+        border-radius: 5px 0 0 5px;
+        height: 2rem;
+        width: auto;
+        padding: 0.2rem 0.2rem;
+      }
+
+      input {
+        border: none;
+        width: 90%;
+        border-radius: 0 5px 5px 0;
+        font-size: medium;
+        padding: 0.2rem 0.25rem;
+        box-shadow: 2px 2px 4px rgb(128, 128, 128);
+      }
+    }
+  }
+}
+
+.glass > button {
+  width: 10vw;
+  height: 3em;
+  border-radius: 10px;
+}
+.glass > label {
+  font-size: larger;
+}
