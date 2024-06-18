@@ -1,0 +1,123 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+  direction: rtl;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+input,
+textarea {
+  caret-color: var(--dibble-yellow);
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    outline: none !important;
+  }
+}
+
+html {
+  font-family: var(--font-body);
+  font-size: 62.5%; //10px
+}
+
+body {
+  box-sizing: border-box;
+}
+
+.app {
+  min-height: 100vh;
+  height: 100%;
+  width: 100vw;
+  max-width: 100%;
+  position: relative;
+  background-color: var(--body-color);
+}
+
+.layout {
+  display: grid;
+  grid-template-rows: min-content max-content max-content;
+  grid-template-columns: 100%;
+  justify-items: center;
+
+  @media only screen and (max-width: $mobile-size) {
+    grid-template-rows: min-content 1fr max-content;
+  }
+
+  &--download-banner {
+    grid-template-rows: min-content min-content 1fr max-content;
+  }
+}
+
+.content {
+  // if the content is smaller then 100vh
+  // the content will be without navbar, footer
+  min-height: calc(100vh - $navbar-height - $footer-height);
+  max-height: max-content;
+  width: 100%;
+  padding: 3.2rem 1.6rem 1.6rem 1.6rem;
+
+  @media only screen and (max-width: $mobile-size) {
+    min-height: calc(100vh - $navbar-height - $mobile-footer-height);
+    padding: 2.4rem 1.2rem;
+    max-height: max-content;
+  }
+
+  &__divide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    align-items: flex-start;
+    height: 100%;
+    column-gap: 1.6rem;
+    position: relative;
+  }
+
+  @media only screen and (min-width: 1280px) {
+    width: 1280px;
+  }
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 0.8rem;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: var(--scroll-gray);
+  // -webkit-box-shadow: var(--scroll-shadow);
+  border-radius: 0.2rem;
+  margin-top: 0.1rem;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background-color: var(--light-yellow);
+  box-shadow: var(--scroll-shadow);
+  border-radius: 0.2rem;
+}
+
+.w100 {
+  width: 100%;
+}
+
+.flexCenter {
+  display: flex;
+  justify-content: center;
+}
