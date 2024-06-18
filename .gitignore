@@ -1,26 +1,38 @@
-# Logs
-logs
-*.log
+# Ignore node_modules and build artifacts for both front-end and back-end
+/node_modules/
+/MediaSharing_front/node_modules/
+/MediaSharing_front/build/
+/MediaSharing_front/.env
+
+/server/node_modules/
+/server/dist/
+/server/.env
+
+# Logs for both projects
+**/logs
+**/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Ignore lock files
+package-lock.json
+yarn.lock
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Ignore environment variables files
+**/.env
+
+# Ignore npm cache directory
+.npm
+
+# Ignore eslint cache
+**/.eslintcache
+
+# TypeScript specific
+**/*.tsbuildinfo
+
+# Optional VS Code settings
+.vscode/
+
+# MacOS specific
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-*.env
-.env
