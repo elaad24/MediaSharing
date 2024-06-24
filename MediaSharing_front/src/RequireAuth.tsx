@@ -4,9 +4,11 @@ import { getCookie } from "./utils/helper";
 
 export default function RequireAuth() {
   const location = useLocation();
-  const accessToken: string | null = getCookie("accsessToken");
+  const accessToken: string | null = getCookie("accessToken");
 
   if (accessToken == null) {
+    // eslint-disable-next-line no-debugger
+    debugger;
     return <Navigate to={"/login"} />;
   }
 

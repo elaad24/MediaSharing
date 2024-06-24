@@ -2,23 +2,30 @@ import person from "../../assets/icons/person.png";
 import lock from "../../assets/icons/unlock.png";
 import email from "../../assets/icons/mail.png";
 
-interface input {
+interface input<T> {
   placeHolder?: string;
   inputComponentType: inputComponentType;
   preImgName: string;
   label: string;
+  attributeName: string;
+  onChange: React.Dispatch<React.SetStateAction<T>>;
 }
 
 type inputComponentType = "text" | "number" | "tel" | "password";
 
-export default function Input({
+export default function Input<T>({
   placeHolder,
   inputComponentType,
   preImgName,
   label,
-}: input) {
+  attributeName,
+  onChange,
+}: input<T>) {
   const id = inputComponentType + label;
 
+  const inputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange((prev) => ({ ...prev, [attributeName]: e.target.value }));
+  };
   return (
     <div className="input_component">
       <div className="input">
@@ -39,6 +46,7 @@ export default function Input({
             placeholder={placeHolder}
             name={id}
             id={id}
+            onChange={inputChange}
           />
         </div>
       </div>
