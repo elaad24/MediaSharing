@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { jwtDecode } from "jwt-decode";
 import { userLogin } from "../interfaces/user";
+import bcrypt from "bcrypt";
+import { error } from "console";
 
 dotenv.config();
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
@@ -35,4 +37,23 @@ export function verifyRefreshToken(refreshToken: string): string | null {
 
     return null;
   }
+}
+
+export async function hashingPassword(password: string) {
+  try {
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(password, salt);
+    return hash;
+  } catch (err) {
+    console.error("error in hashing password ,", err);
+    throw err;
+  }
+}
+
+export async function checkingPassword(
+  plainTextPassword: string,
+  hashedPassword: string
+): Promise<boolean> {
+  return bcrypt.compare(plainTextPassword, hashedPassword);
 }
