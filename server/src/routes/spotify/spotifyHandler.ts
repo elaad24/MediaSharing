@@ -4,12 +4,18 @@ const router = express.Router();
 const app = express();
 import dotenv from "dotenv";
 import axios from "axios";
-import { getAccessToken, getSpotifyPlayListById } from "../../utils/spotify";
+import {
+  findVideoId,
+  getAccessToken,
+  getSpotifyPlayListById,
+} from "../../utils/spotify";
 import { error } from "console";
 import { connectToDatabase } from "../../config/db";
 import {
   DBSpotifyPlaylist,
+  DBSpotifyPlaylistData,
   DBSpotifyPlaylistId,
+  SpotifyPlaylist,
 } from "../../interfaces/spotify";
 
 interface AuthOptions {
@@ -45,6 +51,13 @@ if (!SPOTIFY_COLLECTION_NAME) {
     "SPOTIFY_COLLECTION_NAME is not defined in the environment variables"
   );
 }
+const SPOTIFY_PLAYLIST_COLLECTION_NAME = process.env
+  .SPOTIFY_PLAYLIST_COLLECTION_NAME as string;
+if (!SPOTIFY_PLAYLIST_COLLECTION_NAME) {
+  throw new Error(
+    "SPOTIFY_PLAYLIST_COLLECTION_NAME is not defined in the environment variables"
+  );
+}
 
 router.get(
   "/getAccessToken",
@@ -65,6 +78,62 @@ router.get(
   }
 );
 
+interface addPlaylistInterface {
+  playlistName: string;
+  spotifyId: string;
+}
+router.post(
+  "/addPlaylist",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { playlistName, spotifyId }: addPlaylistInterface = req.body;
+
+      const accessToken = await getAccessToken(
+        SPOTIFY_CLIENT_ID,
+        SPOTIFY_CLIENT_SECRET
+      );
+      if (!accessToken) {
+        throw error;
+      }
+
+      const spotifyData = await getSpotifyPlayListById(spotifyId, accessToken);
+
+      if (spotifyData == null || playlistName == null || spotifyId == null) {
+        throw error("some of the necessary data in missing");
+      }
+
+      // add youtube id for each song
+      const addedYoutubePlaylistTracksItems = await Promise.all(
+        spotifyData.tracks.items.map(async (item) => {
+          const artist = item.track.artists.map((i) => i.name).join(" ");
+          const youtubeId = await findVideoId(item.track.name, artist);
+          item.track.youtubeId = youtubeId;
+          return item;
+        })
+      );
+      spotifyData.tracks.items = addedYoutubePlaylistTracksItems;
+
+      const client = await connectToDatabase();
+      const gettingPlaylistName: DBSpotifyPlaylistData = {
+        playlistName: playlistName,
+        spotifyId: spotifyId,
+        playlistData: spotifyData,
+        timeStamp: Date.now(),
+      };
+
+      const data = await client
+        ?.collection<DBSpotifyPlaylistData>(SPOTIFY_PLAYLIST_COLLECTION_NAME)
+        .findOneAndReplace({ spotifyId: spotifyId }, gettingPlaylistName, {
+          upsert: true,
+        });
+
+      console.log("data", data);
+      res.status(201).json({ text: "added playlist", playlistName });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
 router.post(
   "/addPlaylistId",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -75,12 +144,13 @@ router.post(
       const gettingPlaylistName: DBSpotifyPlaylistId = {
         playlistName: playlistName,
         spotifyId: spotifyId,
+        timeStamp: Date.now(),
       };
       console.log("playlistRegister", gettingPlaylistName);
 
       const data = await client
         ?.collection<DBSpotifyPlaylistId>(SPOTIFY_COLLECTION_NAME)
-        .findOne(gettingPlaylistName);
+        .insertOne(gettingPlaylistName);
 
       console.log("data", data);
       res.status(201).json({ text: "added playlist", playlistName });
@@ -89,6 +159,7 @@ router.post(
     }
   }
 );
+
 router.get(
   "/getPlaylist",
   async (req: Request, res: Response, next: NextFunction) => {

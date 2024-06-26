@@ -12,6 +12,7 @@ import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
 import authHandler from "./routes/auth/authHandler";
 import spotifyHandler from "./routes/spotify/spotifyHandler";
+import youtubeHandler from "./routes/spotify/youtube";
 
 var app = express();
 
@@ -38,6 +39,7 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/auth", authHandler);
 app.use("/spotify", spotifyHandler);
+app.use("/youtube", youtubeHandler);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {

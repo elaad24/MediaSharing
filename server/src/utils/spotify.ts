@@ -1,4 +1,5 @@
 import axios from "axios";
+import { SpotifyPlaylist } from "../interfaces/spotify";
 
 export const getAccessToken = async (
   SPOTIFY_CLIENT_ID: string,
@@ -44,11 +45,23 @@ export const getAccessToken = async (
 export const getSpotifyPlayListById = async (
   playlistId: string,
   spotifyAccessToken: string
-) => {
+): Promise<SpotifyPlaylist> => {
   const headers = { Authorization: `Bearer ${spotifyAccessToken}` };
   const { data } = await axios.get(
     `https://api.spotify.com/v1/playlists/${playlistId}`,
     { headers }
   );
   return data;
+};
+
+export const findVideoId = async (
+  songName: string,
+  songArtist: string
+): Promise<string> => {
+  const data = await axios.get(
+    `https://www.youtube.com/results?search_query=${songName}+${songArtist}`
+  );
+
+  const videoId = data.data.split("watch?v=")[1].slice(0, 11);
+  return videoId;
 };
