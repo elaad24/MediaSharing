@@ -166,4 +166,103 @@
   background-color: #fff;
 }
 
+.SpotifyList {
+  width: 100%;
+  background-color: rgb(179, 206, 206);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.SpotifyList .titleBlock {
+  display: flex;
+  justify-content: space-between;
+}
+.SpotifyList .titleBlock .textPart {
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.SpotifyList .titleBlock .textPart .title {
+  font-size: large;
+}
+.SpotifyList .titleBlock .textPart .description {
+  text-align: justify;
+}
+.SpotifyList .titleBlock .textPart .stats {
+  display: flex;
+  justify-content: space-evenly;
+}
+.SpotifyList .titleBlock .textPart .stats .followers {
+  text-align: justify;
+}
+.SpotifyList .titleBlock .imagePart {
+  display: flex;
+  flex-direction: column;
+}
+.SpotifyList .titleBlock .imagePart .playlistImag .img {
+  width: 10rem;
+  height: auto;
+}
+.SpotifyList .list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.SpotifyList .list .item {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  gap: 1.25rem;
+  padding: 0 1rem;
+}
+.SpotifyList .list .item .listNumber {
+  display: flex;
+  align-self: center;
+  justify-content: center;
+}
+.SpotifyList .list .item .itemInfo {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  gap: 0.9rem;
+}
+.SpotifyList .list .item .itemInfo .itemBody {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  gap: 0.25rem;
+  max-width: 75%;
+}
+.SpotifyList .list .item .itemInfo .itemBody .artists {
+  display: flex;
+  gap: 0.5rem;
+  text-align: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: small;
+}
+.SpotifyList .list .item .itemInfo .itemImage .image {
+  width: 3rem;
+  height: auto;
+  border-radius: 1rem;
+}
+.SpotifyList .list .item .download {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.SpotifyList .list .item .download button .img {
+  width: 1rem;
+  height: auto;
+}
+.SpotifyList .list .item .download .img {
+  cursor: pointer;
+  height: 2rem;
+  width: auto;
+}
+
 /*# sourceMappingURL=style.css.map */
