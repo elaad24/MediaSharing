@@ -1,0 +1,39 @@
+@use "sass:meta";
+@mixin styles {
+  .titleBlock {
+    display: flex;
+    justify-content: space-between;
+
+    .textPart {
+      padding: 0 0.5rem;
+      display: flex;
+      flex-direction: column;
+
+      text-align: center;
+      .title {
+        font-size: large;
+      }
+      .description {
+        text-align: justify;
+      }
+      .stats {
+        display: flex;
+        justify-content: space-evenly;
+        .followers {
+          text-align: justify;
+        }
+      }
+    }
+
+    .imagePart {
+      display: flex;
+      flex-direction: column;
+      .playlistImag {
+        .img {
+          width: 10rem;
+          height: auto;
+        }
+      }
+    }
+  }
+}
