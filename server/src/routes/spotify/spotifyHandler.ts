@@ -8,6 +8,7 @@ import {
   findVideoId,
   getAccessToken,
   getSpotifyPlayListById,
+  getYoutubeFileDownloadLink,
 } from "../../utils/spotify";
 import { error } from "console";
 import { connectToDatabase } from "../../config/db";
@@ -200,5 +201,14 @@ router.get(
     }
   }
 );
+
+// router.get("/test", async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const a = await getYoutubeFileDownloadLink("2FNJNnV9DxM");
+//     res.status(200).send(a);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// });
 
 export default router;
