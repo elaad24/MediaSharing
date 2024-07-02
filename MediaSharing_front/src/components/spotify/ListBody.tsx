@@ -1,37 +1,34 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { SpotifyList } from "./SpotifyList";
 import downloadIcon from "../../assets/icons/downloadIcon.png";
 import youtube from "../../assets/icons/youtube.png";
-import { getYoutubeSongId } from "../../services/spotifyApi";
+import { getDownloadUrl } from "../../services/spotifyApi";
 
 export default function ListBody({ listData }: SpotifyList) {
-  useEffect(() => {
-    console.log(listData);
-  }, [listData]);
-  const getYoutubeId = async (
+  const youtubeBaseLink = "https://www.youtube.com/watch?v=";
+
+  const youtubeLink = async (
     itemID: string,
     songName: string,
     artists: string[]
   ) => {
-    const response = await getYoutubeSongId(songName, artists);
-    const song = listData.tracks.items.filter(
-      (i) => i.track.name == songName
-    )[0];
-    if (song.track.youtubeId == undefined) {
-      console.log(response);
-      song.track.youtubeId = response.data.youtubeId;
-      listData.tracks.items = [...listData.tracks.items, song];
-      console.log("song", song);
-      console.log(listData);
+    console.log("stttt");
+
+    const urlDownload = await getDownloadUrl(songName, artists, itemID);
+    console.log("rrrr", urlDownload);
+    if (urlDownload.data && typeof urlDownload.data == "string") {
+      window.open(urlDownload.data);
     }
-    return song;
   };
-  const youtubeLink = () => {};
   return (
     <div className="list">
       {listData.tracks.items.map((item, index) => {
         return (
-          <div className="item">
+          <div
+            className="item"
+            id={item.track.youtubeId || item.track.id}
+            key={item.track.youtubeId || item.track.id}
+          >
             <div className="listNumber">{index + 1}</div>
             <div className="itemInfo">
               <div className="itemImage">
@@ -56,20 +53,38 @@ export default function ListBody({ listData }: SpotifyList) {
             </div>
             <div
               className="download"
-              onClick={() =>
-                getYoutubeId(
-                  "",
-                  item.track.name,
-                  item.track.artists.map((i) => i.name)
-                )
-              }
+              // onClick={() =>
+              //   getYoutubeId(
+              //     item.track.id,
+              //     item.track.name,
+              //     item.track.artists.map((i) => i.name)
+              //   )
+              //   }
             >
-              {/* <a href=""> */}
-              <img className="img" src={youtube} alt="" />
-              {/* </a> */}
+              {item.track.youtubeId ? (
+                <a
+                  href={`${youtubeBaseLink}${item.track.youtubeId}`}
+                  target="_blank"
+                >
+                  <img className="img" src={youtube} alt=" youtube img" />
+                </a>
+              ) : (
+                <img className="img" src={youtube} alt=" youtube img" />
+              )}
 
               <button className="btn btn-outline-warning ">
-                <img className="img" src={downloadIcon} alt="" />
+                <img
+                  className="img"
+                  onClick={() =>
+                    youtubeLink(
+                      item.track.youtubeId || "",
+                      item.track.name,
+                      item.track.artists.map((i) => i.name)
+                    )
+                  }
+                  src={downloadIcon}
+                  alt=""
+                />
               </button>
             </div>
           </div>
