@@ -2,6 +2,7 @@ import axios, { AxiosHeaders, AxiosRequestHeaders } from "axios";
 import { SpotifyPlaylist } from "../interfaces/spotify";
 import { error } from "console";
 import globalVariable from "../general/globalVariable";
+import { savingFileToDb } from "./database";
 export const getAccessToken = async (
   SPOTIFY_CLIENT_ID: string,
   SPOTIFY_CLIENT_SECRET: string
@@ -118,6 +119,7 @@ export const getYoutubeFileDownloadLink = async (youtubeId: string) => {
 
     const secondDownloadURL = secondReq.data.downloadURL;
     if (secondDownloadURL != undefined && secondDownloadURL != "") {
+      await savingFileToDb(secondDownloadURL);
       return secondDownloadURL;
     }
 
@@ -132,6 +134,7 @@ export const getYoutubeFileDownloadLink = async (youtubeId: string) => {
     const downloadURL = thirdReq.data.downloadURL;
 
     // #4 return the downloadURL
+    await savingFileToDb(downloadURL);
     return downloadURL;
   } catch (error) {
     console.error(error);
