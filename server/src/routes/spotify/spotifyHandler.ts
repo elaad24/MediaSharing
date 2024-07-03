@@ -11,7 +11,7 @@ import {
   getYoutubeFileDownloadLink,
 } from "../../utils/spotify";
 import { error } from "console";
-import { connectToDatabase } from "../../config/db";
+import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
 import {
   DBSpotifyPlaylist,
   DBSpotifyPlaylistData,
@@ -132,6 +132,8 @@ router.post(
       res.status(201).json({ text: "added playlist", playlistName });
     } catch (error) {
       console.error(error);
+    } finally {
+      closeDatabaseConnection();
     }
   }
 );
@@ -157,6 +159,8 @@ router.post(
       res.status(201).json({ text: "added playlist", playlistName });
     } catch (error) {
       console.error(error);
+    } finally {
+      closeDatabaseConnection();
     }
   }
 );
@@ -198,6 +202,8 @@ router.get(
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      closeDatabaseConnection();
     }
   }
 );

@@ -7,7 +7,7 @@ import {
   hashingPassword,
 } from "../../utils/authHelper";
 import { error, log } from "console";
-import { connectToDatabase } from "../../config/db";
+import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
 const router = express.Router();
 const app = express();
 import dotenv from "dotenv";
@@ -65,6 +65,8 @@ router.post(
       console.log("data", data);
     } catch (error) {
       res.status(400).json({ response: "there is an error", error });
+    } finally {
+      closeDatabaseConnection();
     }
   }
 );
@@ -103,6 +105,8 @@ router.post(
       }
     } catch (error) {
       res.status(400).json({ response: "wrong info" });
+    } finally {
+      closeDatabaseConnection();
     }
   }
 );

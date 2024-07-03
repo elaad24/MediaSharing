@@ -1,6 +1,11 @@
 import axios from "axios";
 import fs from "fs";
-export const savingFileToDb = async (url: string) => {
+import { GridFSBucket } from "mongodb";
+import { closeDatabaseConnection, connectToDatabase } from "../config/db";
+import { error } from "console";
+const path = require("path");
+
+export const downloadFileToServer = async (url: string) => {
   try {
     const response = await axios.get(url, { responseType: "stream" });
     console.log(response);
@@ -34,4 +39,37 @@ export const savingFileToDb = async (url: string) => {
 
 export function decodeFilename(encodedName: string) {
   return Buffer.from(encodedName, "latin1").toString("utf8");
+}
+
+export async function uploadFileToGridFs(filename: string) {
+  // this is the value that need to pass - const database = client.db(dbName);
+  const client = await connectToDatabase();
+  try {
+    if (client) {
+      const bucket = new GridFSBucket(client);
+
+      const filePath = path.join(__dirname, `../downloadFiles/${filename}`);
+      const readStream = fs.createReadStream(filePath);
+      const uploadStream = bucket.openUploadStream(path.basename(filePath));
+
+      readStream
+        .pipe(uploadStream)
+        .on("error", (error) => {
+          console.error("Error uploading file:", error);
+          throw error;
+        })
+        .on("finish", () => {
+          console.log("File uploaded successfully");
+          deleteFile(filePath);
+        });
+    }
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  } finally {
+    closeDatabaseConnection();
+  }
+}
+
+export async function deleteFile(filePath: string) {
+  await fs.rmdirSync(filePath);
 }
