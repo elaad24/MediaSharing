@@ -12,6 +12,8 @@ import {
   getYoutubeFileDownloadLink,
 } from "../../utils/spotify";
 import { error } from "console";
+import { downloadFileToServer, uploadFileToGridFs } from "../../utils/database";
+import { connectToDatabase } from "../../config/db";
 
 dotenv.config();
 
@@ -52,7 +54,15 @@ router.get(
       }
       if (youtubeSongId) {
         const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
-
+        if (downloadUrl) {
+          const url = await downloadFileToServer(downloadUrl);
+          if (url?.fileName) {
+            const client = await connectToDatabase();
+            if (client) {
+              await uploadFileToGridFs(client, url.fileName);
+            }
+          }
+        }
         res.status(200).json({ data: downloadUrl });
       } else {
         throw error(

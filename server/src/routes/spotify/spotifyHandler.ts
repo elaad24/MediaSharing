@@ -8,7 +8,6 @@ import {
   findVideoId,
   getAccessToken,
   getSpotifyPlayListById,
-  getYoutubeFileDownloadLink,
 } from "../../utils/spotify";
 import { error } from "console";
 import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
