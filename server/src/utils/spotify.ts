@@ -2,7 +2,6 @@ import axios, { AxiosHeaders, AxiosRequestHeaders } from "axios";
 import { SpotifyPlaylist } from "../interfaces/spotify";
 import { error } from "console";
 import globalVariable from "../general/globalVariable";
-import { downloadFileToServer } from "./database";
 export const getAccessToken = async (
   SPOTIFY_CLIENT_ID: string,
   SPOTIFY_CLIENT_SECRET: string
@@ -68,7 +67,9 @@ export const findVideoId = async (
   return videoId;
 };
 
-export const getYoutubeFileDownloadLink = async (youtubeId: string) => {
+export const getYoutubeFileDownloadLink = async (
+  youtubeId: string
+): Promise<string | undefined> => {
   try {
     // this is 3 main steps to get the file data
     // its an option that it will be 2 steps as well if the song is in the api cache memory
@@ -119,7 +120,6 @@ export const getYoutubeFileDownloadLink = async (youtubeId: string) => {
 
     const secondDownloadURL = secondReq.data.downloadURL;
     if (secondDownloadURL != undefined && secondDownloadURL != "") {
-      await downloadFileToServer(secondDownloadURL);
       return secondDownloadURL;
     }
 
@@ -134,7 +134,6 @@ export const getYoutubeFileDownloadLink = async (youtubeId: string) => {
     const downloadURL = thirdReq.data.downloadURL;
 
     // #4 return the downloadURL
-    await downloadFileToServer(downloadURL);
     return downloadURL;
   } catch (error) {
     console.error(error);

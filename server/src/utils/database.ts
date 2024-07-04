@@ -1,14 +1,19 @@
 import axios from "axios";
 import fs from "fs";
-import { GridFSBucket } from "mongodb";
+import { MongoClient, GridFSBucket, Db } from "mongodb";
 import { closeDatabaseConnection, connectToDatabase } from "../config/db";
-import { error } from "console";
+import { promises } from "dns";
+
 const path = require("path");
 
-export const downloadFileToServer = async (url: string) => {
+export const downloadFileToServer = async (
+  url: string
+): Promise<{ fileName: string | null } | undefined> => {
   try {
+    let successful = null;
+
     const response = await axios.get(url, { responseType: "stream" });
-    console.log(response);
+    // console.log(response);
     console.log(`Status: ${response.status}`);
     console.log(`Status Text: ${response.statusText}`);
     console.log(`Headers:`, response.headers);
@@ -23,14 +28,20 @@ export const downloadFileToServer = async (url: string) => {
     }
 
     // Saving the file
-    const writer = fs.createWriteStream(`../downloadFiles/${filename}`);
+    const writer = fs.createWriteStream(`./src/downloadFiles/${filename}`);
 
-    response.data.pipe(writer);
-    writer.on("finish", () => {
-      console.log("File successfully downloaded and saved.");
-    });
-    writer.on("error", (err) => {
-      console.error("Error writing the file:", err);
+    await response.data.pipe(writer);
+    return new Promise((resolve, reject) => {
+      writer.on("finish", () => {
+        console.log("File successfully downloaded and saved.");
+        successful = true;
+        resolve({ fileName: filename });
+      });
+      writer.on("error", (err) => {
+        console.error("Error writing the file:", err);
+        successful = false;
+        reject({ fileName: null });
+      });
     });
   } catch (error) {
     console.error("Error downloading file", error);
@@ -41,9 +52,7 @@ export function decodeFilename(encodedName: string) {
   return Buffer.from(encodedName, "latin1").toString("utf8");
 }
 
-export async function uploadFileToGridFs(filename: string) {
-  // this is the value that need to pass - const database = client.db(dbName);
-  const client = await connectToDatabase();
+export async function uploadFileToGridFs(client: Db, filename: string) {
   try {
     if (client) {
       const bucket = new GridFSBucket(client);
@@ -52,24 +61,36 @@ export async function uploadFileToGridFs(filename: string) {
       const readStream = fs.createReadStream(filePath);
       const uploadStream = bucket.openUploadStream(path.basename(filePath));
 
-      readStream
-        .pipe(uploadStream)
-        .on("error", (error) => {
-          console.error("Error uploading file:", error);
-          throw error;
-        })
-        .on("finish", () => {
-          console.log("File uploaded successfully");
-          deleteFile(filePath);
-        });
+      return new Promise((resolve, reject) => {
+        readStream
+          .pipe(uploadStream)
+          .on("error", (error) => {
+            console.error("Error uploading file:", error);
+            reject(error);
+          })
+          .on("finish", async () => {
+            try {
+              console.log("File uploaded successfully");
+              await deleteFile(filePath);
+              resolve("done");
+            } catch (deleteError) {
+              console.error("Error deleting file:", deleteError);
+              reject(deleteError);
+            }
+          });
+      });
     }
   } catch (error) {
     console.error("Error uploading file:", error);
-  } finally {
-    closeDatabaseConnection();
   }
 }
 
 export async function deleteFile(filePath: string) {
-  await fs.rmdirSync(filePath);
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error("Error deleting file:", err);
+    } else {
+      console.log("File deleted successfully");
+    }
+  });
 }
