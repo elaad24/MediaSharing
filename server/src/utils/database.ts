@@ -52,14 +52,18 @@ export function decodeFilename(encodedName: string) {
   return Buffer.from(encodedName, "latin1").toString("utf8");
 }
 
-export async function uploadFileToGridFs(client: Db, filename: string) {
+export async function uploadFileToGridFs(
+  bucket: GridFSBucket,
+  filename: string,
+  youtubeID: string
+) {
   try {
-    if (client) {
-      const bucket = new GridFSBucket(client);
-
+    if (bucket) {
       const filePath = path.join(__dirname, `../downloadFiles/${filename}`);
       const readStream = fs.createReadStream(filePath);
-      const uploadStream = bucket.openUploadStream(path.basename(filePath));
+      const uploadStream = bucket.openUploadStream(path.basename(filePath), {
+        metadata: { youtubeID: youtubeID },
+      });
 
       return new Promise((resolve, reject) => {
         readStream
@@ -93,4 +97,15 @@ export async function deleteFile(filePath: string) {
       console.log("File deleted successfully");
     }
   });
+}
+
+export async function isFileExistInGridFs(client: Db, youtubeID: string) {
+  const cursor = await client
+    .collection("fs.files")
+    .find({ "metadata.youtubeID": youtubeID })
+    .toArray();
+  if (cursor.length) {
+    return cursor[0];
+  }
+  return null;
 }

@@ -12,8 +12,12 @@ import {
   getYoutubeFileDownloadLink,
 } from "../../utils/spotify";
 import { error } from "console";
-import { downloadFileToServer, uploadFileToGridFs } from "../../utils/database";
-import { connectToDatabase } from "../../config/db";
+import {
+  downloadFileToServer,
+  isFileExistInGridFs,
+  uploadFileToGridFs,
+} from "../../utils/database";
+import { connectToDatabase, getGridFSBucket } from "../../config/db";
 
 dotenv.config();
 
@@ -45,10 +49,15 @@ router.get(
     try {
       const { songName, songArtist, songId } = req.query;
       let youtubeSongId;
+      const bucket = await getGridFSBucket();
+
       if (typeof songId === "string" && songId != "undefined") {
         youtubeSongId = songId;
       } else {
         if (typeof songName === "string" && typeof songArtist === "string") {
+          // return to here
+          // now im gooing to add atribut of youtubeId to the mongo fsgrid for easer lookup
+
           youtubeSongId = await findVideoId(songName, songArtist);
         }
       }
@@ -57,9 +66,8 @@ router.get(
         if (downloadUrl) {
           const url = await downloadFileToServer(downloadUrl);
           if (url?.fileName) {
-            const client = await connectToDatabase();
-            if (client) {
-              await uploadFileToGridFs(client, url.fileName);
+            if (bucket) {
+              await uploadFileToGridFs(bucket, url.fileName, youtubeSongId);
             }
           }
         }
@@ -74,5 +82,19 @@ router.get(
     }
   }
 );
+
+router.get("/try", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const client = await connectToDatabase();
+
+    // const bucket = await getGridFSBucket();
+    if (client) {
+      await isFileExistInGridFs(client, "Md21OZKntbg");
+    }
+    return res.status(200);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+});
 
 export default router;

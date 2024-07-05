@@ -1,4 +1,4 @@
-import { MongoClient, Db, ServerApiVersion } from "mongodb";
+import { MongoClient, Db, ServerApiVersion, GridFSBucket } from "mongodb";
 
 import dotenv from "dotenv";
 
@@ -42,5 +42,17 @@ export async function closeDatabaseConnection() {
   if (client) {
     await client.close();
     console.log("MongoDB connection closed");
+  }
+}
+
+export async function getGridFSBucket() {
+  try {
+    const db = await connectToDatabase();
+    if (db) {
+      const bucket = new GridFSBucket(db);
+      return bucket;
+    }
+  } catch (error) {
+    console.error("error getting GridFSBucket", error);
   }
 }
