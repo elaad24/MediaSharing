@@ -15,6 +15,7 @@ import { error } from "console";
 import {
   downloadFileToServer,
   isFileExistInGridFs,
+  sendFileFromGridFs,
   uploadFileToGridFs,
 } from "../../utils/database";
 import { connectToDatabase, getGridFSBucket } from "../../config/db";
@@ -49,33 +50,40 @@ router.get(
     try {
       const { songName, songArtist, songId } = req.query;
       let youtubeSongId;
-      const bucket = await getGridFSBucket();
+      let bucket;
 
       if (typeof songId === "string" && songId != "undefined") {
         youtubeSongId = songId;
-      } else {
-        if (typeof songName === "string" && typeof songArtist === "string") {
-          // return to here
-          // now im gooing to add atribut of youtubeId to the mongo fsgrid for easer lookup
-
-          youtubeSongId = await findVideoId(songName, songArtist);
-        }
-      }
-      if (youtubeSongId) {
-        const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
-        if (downloadUrl) {
-          const url = await downloadFileToServer(downloadUrl);
-          if (url?.fileName) {
-            if (bucket) {
-              await uploadFileToGridFs(bucket, url.fileName, youtubeSongId);
-            }
+        bucket = await getGridFSBucket();
+        const client = await connectToDatabase();
+        if (client && bucket) {
+          const fileInfo = await isFileExistInGridFs(client, youtubeSongId);
+          if (fileInfo) {
+            await sendFileFromGridFs(bucket, fileInfo._id, res);
+            return res.status(200).send("success");
           }
         }
-        res.status(200).json({ data: downloadUrl });
       } else {
-        throw error(
-          "songId is undefined  and missing data  songName/songArtist"
-        );
+        if (typeof songName === "string" && typeof songArtist === "string") {
+          youtubeSongId = await findVideoId(songName, songArtist);
+        }
+
+        if (youtubeSongId) {
+          const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
+          if (downloadUrl) {
+            const url = await downloadFileToServer(downloadUrl);
+            if (url?.fileName) {
+              if (bucket) {
+                await uploadFileToGridFs(bucket, url.fileName, youtubeSongId);
+              }
+            }
+          }
+          res.status(200).json({ data: downloadUrl });
+        } else {
+          throw error(
+            "songId is undefined  and missing data  songName/songArtist"
+          );
+        }
       }
     } catch (error) {
       console.error(error);
@@ -83,15 +91,27 @@ router.get(
   }
 );
 
+// im[lemnt this function in the getDownloadUrl api endpont in the server
 router.get("/try", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const client = await connectToDatabase();
+    const bucket = await getGridFSBucket();
 
     // const bucket = await getGridFSBucket();
+    let a = null;
     if (client) {
-      await isFileExistInGridFs(client, "Md21OZKntbg");
+      a = await isFileExistInGridFs(client, "Md21OZKntbg");
+
+      if (client && bucket) {
+        const fileInfo = await isFileExistInGridFs(client, "Md21OZKntbg");
+        if (fileInfo) {
+          await sendFileFromGridFs(bucket, fileInfo._id, res);
+          return;
+          //   res.status(200).send("success");
+        }
+      }
     }
-    return res.status(200);
+    return res.status(200).json(a);
   } catch (error) {
     res.status(400).json(error);
   }

@@ -1,8 +1,9 @@
 import axios from "axios";
 import fs from "fs";
-import { MongoClient, GridFSBucket, Db } from "mongodb";
+import { MongoClient, GridFSBucket, Db, ObjectId } from "mongodb";
 import { closeDatabaseConnection, connectToDatabase } from "../config/db";
 import { promises } from "dns";
+import { Response } from "express";
 
 const path = require("path");
 
@@ -108,4 +109,30 @@ export async function isFileExistInGridFs(client: Db, youtubeID: string) {
     return cursor[0];
   }
   return null;
+}
+
+export async function sendFileFromGridFs(
+  bucket: GridFSBucket,
+  fileMongodbObjectID: ObjectId,
+  res: Response
+) {
+  // need to fix this function
+  const downloadStream = bucket.openDownloadStream(fileMongodbObjectID);
+  // const downloadStream = bucket.openDownloadStreamByName(filename);
+  console.log("downloadStream", downloadStream);
+  downloadStream.on("error", (err) => {
+    console.error("Error downloading file:", err);
+    res.status(500).send("Error downloading file.");
+  });
+
+  downloadStream.on("file", (file) => {
+    console.log(file);
+    res.setHeader("Content-Type", file.contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${file.filename}"`
+    );
+  });
+
+  downloadStream.pipe(res);
 }
