@@ -117,22 +117,30 @@ export async function sendFileFromGridFs(
   res: Response
 ) {
   // need to fix this function
-  const downloadStream = bucket.openDownloadStream(fileMongodbObjectID);
-  // const downloadStream = bucket.openDownloadStreamByName(filename);
-  console.log("downloadStream", downloadStream);
-  downloadStream.on("error", (err) => {
-    console.error("Error downloading file:", err);
-    res.status(500).send("Error downloading file.");
-  });
+  return new Promise((resolve, reject) => {
+    const downloadStream = bucket.openDownloadStream(fileMongodbObjectID);
 
-  downloadStream.on("file", (file) => {
-    console.log(file);
-    res.setHeader("Content-Type", file.contentType);
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${file.filename}"`
-    );
-  });
+    downloadStream.on("error", (err) => {
+      console.error("Error downloading file:", err);
+      res.status(500).send("Error downloading file.");
+      reject(err);
+    });
 
-  downloadStream.pipe(res);
+    downloadStream.on("file", (file) => {
+      const encodedFilename = encodeURIComponent(file.filename);
+
+      console.log("file", file);
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename*=UTF-8''${encodedFilename}`
+      );
+    });
+
+    downloadStream.on("end", () => {
+      resolve("done");
+    });
+    res.status(200);
+    downloadStream.pipe(res);
+  });
 }
