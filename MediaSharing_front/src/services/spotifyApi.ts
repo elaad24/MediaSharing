@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { server_url } from "./urls";
 
 axios.defaults.withCredentials = true;
@@ -25,7 +25,7 @@ export const getSpotifyPlaylist = async (playlistName: string) => {
 //   );
 // };
 
-export const getDownloadUrl = async (
+export const downloadYoutubeSong = async (
   songName: string,
   artists: string[],
   songId?: string
@@ -42,13 +42,14 @@ export const getDownloadUrl = async (
   const query = `${querySongName}${songArtistsName}${querySongId}`;
   console.log("query", query);
 
-  const { data } = await axios.get(
-    `${server_url}/youtube/getDownloadUrl?${query}`,
-    {
-      withCredentials: true,
-    }
-  );
-  return data;
+  const ans = await axios.get(`${server_url}/youtube/DownloadSong?${query}`, {
+    withCredentials: true,
+    responseType: "arraybuffer",
+  });
+  console.log("====================================");
+  console.log("ddd", ans);
+  console.log("====================================");
+  return ans;
 };
 
 // export const login = (

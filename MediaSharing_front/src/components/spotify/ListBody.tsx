@@ -2,22 +2,63 @@ import React from "react";
 import { SpotifyList } from "./SpotifyList";
 import downloadIcon from "../../assets/icons/downloadIcon.png";
 import youtube from "../../assets/icons/youtube.png";
-import { getDownloadUrl } from "../../services/spotifyApi";
+import { downloadYoutubeSong } from "../../services/spotifyApi";
 
 export default function ListBody({ listData }: SpotifyList) {
   const youtubeBaseLink = "https://www.youtube.com/watch?v=";
 
-  const youtubeLink = async (
+  const youtubeDownload = async (
     itemID: string,
     songName: string,
     artists: string[]
   ) => {
-    console.log("stttt");
+    const response = await downloadYoutubeSong(songName, artists, itemID);
+    // const response = await axios.get(`${server_url}/youtube/try2`);
 
-    const urlDownload = await getDownloadUrl(songName, artists, itemID);
-    console.log("rrrr", urlDownload);
-    if (urlDownload.data && typeof urlDownload.data == "string") {
-      window.open(urlDownload.data);
+    // grabing the url from the api and open the window for download
+    if (
+      response.headers["content-type"]
+        ?.toLocaleString()
+        .search("application/json") != -1
+    ) {
+      if (response.data) {
+        const responseData = JSON.parse(
+          new TextDecoder().decode(response.data)
+        );
+        if (response.data) {
+          window.open(responseData.data, "_blank");
+        }
+      }
+    } else if (
+      response.headers["content-type"]
+        ?.toLocaleString()
+        .search("application/octet-stream") != -1
+    ) {
+      // need to grab the stream data .
+      const blob = new Blob([response.data], {
+        type: "application/octet-stream",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const contentDisposition = response.headers["content-disposition"];
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(
+          /filename\*=UTF-8''(.+)$/
+        );
+        if (filenameMatch && filenameMatch.length === 2) {
+          const filename = decodeURIComponent(filenameMatch[1]);
+          link.setAttribute("download", filename);
+        }
+      } else {
+        link.setAttribute("download", "file");
+      }
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     }
   };
   return (
@@ -76,7 +117,7 @@ export default function ListBody({ listData }: SpotifyList) {
                 <img
                   className="img"
                   onClick={() =>
-                    youtubeLink(
+                    youtubeDownload(
                       item.track.youtubeId || "",
                       item.track.name,
                       item.track.artists.map((i) => i.name)
