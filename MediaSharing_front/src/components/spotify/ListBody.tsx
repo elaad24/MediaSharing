@@ -1,4 +1,3 @@
-import React from "react";
 import { SpotifyList } from "./SpotifyList";
 import downloadIcon from "../../assets/icons/downloadIcon.png";
 import youtube from "../../assets/icons/youtube.png";
@@ -34,14 +33,22 @@ export default function ListBody({ listData }: SpotifyList) {
         ?.toLocaleString()
         .search("application/octet-stream") != -1
     ) {
+      alert("122");
       // need to grab the stream data .
       const blob = new Blob([response.data], {
         type: "application/octet-stream",
       });
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-
+      console.log("====================================");
+      console.log("res", response);
+      console.log("====================================");
+      console.log(
+        "response.headers['content-disposition']",
+        response.headers["content-disposition"]
+      );
       const contentDisposition = response.headers["content-disposition"];
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(

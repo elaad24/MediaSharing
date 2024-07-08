@@ -40,15 +40,12 @@ export const downloadYoutubeSong = async (
   const songArtistsName = `&songArtist=${artistString}`;
 
   const query = `${querySongName}${songArtistsName}${querySongId}`;
-  console.log("query", query);
 
   const ans = await axios.get(`${server_url}/youtube/DownloadSong?${query}`, {
     withCredentials: true,
     responseType: "arraybuffer",
   });
-  console.log("====================================");
-  console.log("ddd", ans);
-  console.log("====================================");
+
   return ans;
 };
 

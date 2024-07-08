@@ -116,7 +116,6 @@ export async function sendFileFromGridFs(
   fileMongodbObjectID: ObjectId,
   res: Response
 ) {
-  // need to fix this function
   return new Promise((resolve, reject) => {
     const downloadStream = bucket.openDownloadStream(fileMongodbObjectID);
 
@@ -141,6 +140,7 @@ export async function sendFileFromGridFs(
       resolve("done");
     });
     res.status(200);
+
     downloadStream.pipe(res);
   });
 }
