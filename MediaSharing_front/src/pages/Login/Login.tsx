@@ -12,6 +12,8 @@ export default function Login() {
     password: null,
   });
 
+  const [errorMsg, setErrorMsg] = useState(null);
+
   const navigate = useNavigate();
 
   const onSubmit = async () => {
@@ -20,21 +22,26 @@ export default function Login() {
         typeof formData?.userName === "string" &&
         typeof formData?.password === "string"
       ) {
-        const {
-          data: { accessToken },
-        } = await login({
+        setErrorMsg(null);
+        const { data } = await login({
           userName: formData.userName,
           password: formData.password,
         });
-        if (!accessToken) {
+        console.log("====================================");
+        console.log("data", data);
+        console.log("====================================");
+        if (!data.accessToken) {
+          alert(1);
           throw "error happened";
         }
-        console.log(accessToken);
-        setCookie("accessToken", accessToken, 1500);
-        navigate("/songs");
+        console.log(data.accessToken);
+        setCookie("accessToken", data.accessToken, 1500);
+        navigate("/songsClose");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
+      setErrorMsg(error?.response?.data?.response);
+      alert(2);
     }
   };
 
@@ -49,6 +56,7 @@ export default function Login() {
             label="Username"
             attributeName="userName"
             onChange={setFormData}
+            error={errorMsg ? true : false}
           />
           <Input
             placeHolder={"Type your password"}
@@ -57,7 +65,9 @@ export default function Login() {
             label="Password"
             attributeName="password"
             onChange={setFormData}
+            error={errorMsg ? true : false}
           />
+          <div className="errorTextBox">{errorMsg ? errorMsg : " "}</div>
 
           <button
             onClick={async () => {

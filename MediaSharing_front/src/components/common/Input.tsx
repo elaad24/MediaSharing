@@ -9,6 +9,7 @@ interface input<T> {
   label: string;
   attributeName: string;
   onChange: React.Dispatch<React.SetStateAction<T>>;
+  error: boolean;
 }
 
 type inputComponentType = "text" | "number" | "tel" | "password";
@@ -19,6 +20,7 @@ export default function Input<T>({
   preImgName,
   label,
   attributeName,
+  error,
   onChange,
 }: input<T>) {
   const id = inputComponentType + label;
@@ -31,7 +33,10 @@ export default function Input<T>({
       <div className="input">
         <label htmlFor={id}>{label}</label>
 
-        <div className="inputBox">
+        <div
+          className="inputBox"
+          style={error ? { border: "3.5px solid red" } : {}}
+        >
           {preImgName == "person" ? (
             <img src={person} alt="" />
           ) : preImgName == "lock" ? (

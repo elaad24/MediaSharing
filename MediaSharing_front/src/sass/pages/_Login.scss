@@ -10,7 +10,7 @@
     .glass {
       width: 60vw;
       max-width: 45rem;
-      height: 45vh;
+      height: 50vh;
       background-color: rgba(255, 255, 255, 0.585);
       backdrop-filter: blur(10px);
       border-radius: 15px;
@@ -21,6 +21,10 @@
       gap: 0.7rem;
       padding: 2rem 1rem;
 
+      .errorTextBox {
+        height: 2rem;
+        color: rgb(107, 107, 107);
+      }
       .forgetPassword {
         width: auto;
         background-color: transparent;
