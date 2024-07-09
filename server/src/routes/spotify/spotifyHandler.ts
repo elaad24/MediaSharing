@@ -59,6 +59,7 @@ if (!SPOTIFY_PLAYLIST_COLLECTION_NAME) {
   );
 }
 
+//getting access token from spotify for spotify api
 router.get(
   "/getAccessToken",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -82,6 +83,8 @@ interface addPlaylistInterface {
   playlistName: string;
   spotifyId: string;
 }
+
+// adding playlist from spotify to the database
 router.post(
   "/addPlaylist",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -136,6 +139,8 @@ router.post(
     }
   }
 );
+
+// adding playlist header to the database
 router.post(
   "/addPlaylistId",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -164,6 +169,7 @@ router.post(
   }
 );
 
+// retrieving the playlist from spotify api by playlistName (the header of the playlist need to be in db header)
 router.get(
   "/getPlaylist",
   async (req: Request, res: Response, next: NextFunction) => {

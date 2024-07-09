@@ -23,6 +23,8 @@ import { connectToDatabase, getGridFSBucket } from "../../config/db";
 dotenv.config();
 
 //! its crush the app when run - need to check why
+
+//getting youtube video id
 router.get(
   "/getSong",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -33,8 +35,8 @@ router.get(
       }
 
       if (typeof songName === "string" && typeof songArtist === "string") {
-        const youtubeVideoURL = findVideoId(songName, songArtist);
-        res.status(200).json({ youtubeId: youtubeVideoURL });
+        const youtubeVideoId = findVideoId(songName, songArtist);
+        res.status(200).json({ youtubeId: youtubeVideoId });
       } else {
         throw error("songName, songArtist either of theme is not string");
       }
@@ -44,6 +46,7 @@ router.get(
   }
 );
 
+// download the song to the db or retrieving it if in db
 router.get(
   "/DownloadSong",
   async (req: Request, res: Response, next: NextFunction) => {
