@@ -8,39 +8,56 @@ import {
   isSuspiciousUrl,
   isValidFrameHeader,
 } from "./cvesHelper";
+import { rejects } from "assert";
 
 // if it true so its okay ,
 //! if false then its a problem
 
-interface cveCheckerResponse {
+export interface cveCheckerResponse {
   answer: boolean;
   text: string | null;
   reason: string | null;
   cve: string;
 }
+export interface check_abnormal_small_file_size_interface {
+  response: Response;
+}
 
-export const check_abnormal_small_file_size = (
-  res: Response
-): cveCheckerResponse => {
-  const responseHeaders = res.getHeaders();
-  const ans =
-    responseHeaders["content-length"] != undefined &&
-    Number(responseHeaders["content-length"]) > 10240;
-  if (ans) {
-    return { answer: ans, cve: "CVE-2017-15288", text: null, reason: null };
-  } else {
-    return {
-      answer: false,
-      cve: "CVE-2017-15288",
-      text: "file size too small",
-      reason: "file size under 10kb",
-    };
-  }
+export interface file_path_interface {
+  filepath: string;
+}
+
+export const check_abnormal_small_file_size = ({
+  response,
+}: check_abnormal_small_file_size_interface): Promise<cveCheckerResponse> => {
+  return new Promise((resolve, reject) => {
+    const responseHeaders = response.getHeaders();
+    const ans =
+      responseHeaders["content-length"] != undefined &&
+      Number(responseHeaders["content-length"]) > 10240;
+    if (ans) {
+      return resolve({
+        answer: ans,
+        cve: "CVE-2017-15288",
+        text: null,
+        reason: null,
+      });
+    } else {
+      return reject({
+        answer: false,
+        cve: "CVE-2017-15288",
+        text: "file size too small",
+        reason: "file size under 10kb",
+      });
+    }
+  });
 };
 
-export const check_url_tags = async (file): Promise<cveCheckerResponse> => {
+export const check_url_tags = async ({
+  filepath,
+}: file_path_interface): Promise<cveCheckerResponse> => {
   try {
-    const metadata = await parseFile(file);
+    const metadata = await parseFile(filepath);
     // ID3 tag that are specifically associated with URLs in MP3 metadata
     const urlTags = ["WXXX", "WOAR", "WOAS", "WOAF"];
     let suspiciousUrls: string[] = [];
@@ -77,11 +94,11 @@ export const check_url_tags = async (file): Promise<cveCheckerResponse> => {
   }
 };
 
-export const check_for_unexpected_tags = async (
-  file: string
-): Promise<cveCheckerResponse> => {
+export const check_for_unexpected_tags = async ({
+  filepath,
+}: file_path_interface): Promise<cveCheckerResponse> => {
   try {
-    const metadata = await parseFile(file);
+    const metadata = await parseFile(filepath);
     const maxMetadataSize = 1024 * 10;
     const metadataSize = Buffer.byteLength(JSON.stringify(metadata.common));
     // check for matadata size
@@ -148,66 +165,75 @@ export const check_for_unexpected_tags = async (
 };
 
 // Function to read an MP3 file and analyze its frames
-export const analyze_mp3_frames = (filePath: string): cveCheckerResponse => {
-  const fileBuffer = fs.readFileSync(filePath);
-  let offset = 0;
+export const analyze_mp3_frames = ({
+  filepath,
+}: file_path_interface): Promise<cveCheckerResponse> => {
+  return new Promise((resolve, reject) => {
+    const fileBuffer = fs.readFileSync(filepath);
+    let offset = 0;
 
-  while (offset < fileBuffer.length) {
-    const frameHeader = fileBuffer.slice(offset, offset + 4);
+    while (offset < fileBuffer.length) {
+      const frameHeader = fileBuffer.slice(offset, offset + 4);
 
-    if (frameHeader.length < 4) break;
+      if (frameHeader.length < 4) break;
 
-    // Check sync bits (first 11 bits should be set to 1)
-    if (frameHeader[0] === 0xff && (frameHeader[1] & 0xe0) === 0xe0) {
-      // Extract frame information
-      const versionBits = (frameHeader[1] & 0x18) >> 3;
-      const layerBits = (frameHeader[1] & 0x06) >> 1;
-      const bitrateBits = (frameHeader[2] & 0xf0) >> 4;
-      const sampleRateBits = (frameHeader[2] & 0x0c) >> 2;
-      const paddingBit = (frameHeader[2] & 0x02) >> 1;
+      // Check sync bits (first 11 bits should be set to 1)
+      if (frameHeader[0] === 0xff && (frameHeader[1] & 0xe0) === 0xe0) {
+        // Extract frame information
+        const versionBits = (frameHeader[1] & 0x18) >> 3;
+        const layerBits = (frameHeader[1] & 0x06) >> 1;
+        const bitrateBits = (frameHeader[2] & 0xf0) >> 4;
+        const sampleRateBits = (frameHeader[2] & 0x0c) >> 2;
+        const paddingBit = (frameHeader[2] & 0x02) >> 1;
 
-      // Check for unexpected values
-      if (
-        !isValidFrameHeader(versionBits, layerBits, bitrateBits, sampleRateBits)
-      ) {
-        console.log(`Unexpected frame header values at offset ${offset}`);
-        return {
-          answer: false,
-          cve: "CVE-2020-21674",
-          text: "Unexpected frame header",
-          reason: `Unexpected frame header values at offset ${offset}`,
-        };
+        // Check for unexpected values
+        if (
+          !isValidFrameHeader(
+            versionBits,
+            layerBits,
+            bitrateBits,
+            sampleRateBits
+          )
+        ) {
+          console.log(`Unexpected frame header values at offset ${offset}`);
+          return reject({
+            answer: false,
+            cve: "CVE-2020-21674",
+            text: "Unexpected frame header",
+            reason: `Unexpected frame header values at offset ${offset}`,
+          });
+        }
+
+        // Calculate frame size
+        const bitrate = getBitrate(versionBits, layerBits, bitrateBits);
+        const sampleRate = getSampleRate(versionBits, sampleRateBits);
+        const frameSize = calculateFrameSize(bitrate, sampleRate, paddingBit);
+
+        if (frameSize <= 0 || frameSize > 1441) {
+          // 1441 bytes is the maximum possible frame size for MP3
+          console.log(
+            `Abnormal frame size (${frameSize} bytes) at offset ${offset}`
+          );
+          return reject({
+            answer: false,
+            cve: "CVE-2020-21674",
+            text: "Abnormal frame size",
+            reason: `Abnormal frame size (${frameSize} bytes) at offset ${offset}`,
+          });
+        }
+
+        offset += frameSize;
+      } else {
+        // Move to the next byte if sync bits are not found
+        offset += 1;
       }
-
-      // Calculate frame size
-      const bitrate = getBitrate(versionBits, layerBits, bitrateBits);
-      const sampleRate = getSampleRate(versionBits, sampleRateBits);
-      const frameSize = calculateFrameSize(bitrate, sampleRate, paddingBit);
-
-      if (frameSize <= 0 || frameSize > 1441) {
-        // 1441 bytes is the maximum possible frame size for MP3
-        console.log(
-          `Abnormal frame size (${frameSize} bytes) at offset ${offset}`
-        );
-        return {
-          answer: false,
-          cve: "CVE-2020-21674",
-          text: "Abnormal frame size",
-          reason: `Abnormal frame size (${frameSize} bytes) at offset ${offset}`,
-        };
-      }
-
-      offset += frameSize;
-    } else {
-      // Move to the next byte if sync bits are not found
-      offset += 1;
     }
-  }
 
-  return {
-    answer: true,
-    cve: "CVE-2020-21674",
-    text: null,
-    reason: null,
-  };
+    return resolve({
+      answer: true,
+      cve: "CVE-2020-21674",
+      text: null,
+      reason: null,
+    });
+  });
 };
