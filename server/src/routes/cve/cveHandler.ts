@@ -1,17 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import express from "express";
-import {
-  checkingPassword,
-  generateAccessToken,
-  generateRefreshToken,
-  hashingPassword,
-} from "../../utils/authHelper";
-import { error, log } from "console";
 import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
 const router = express.Router();
 const app = express();
 import dotenv from "dotenv";
-import { DBUser } from "../../interfaces/user";
 import { closeDbConnectionAfterReq } from "../../middleware/closeDbConnection";
 import { DBCve, cveInput } from "../../interfaces/cve";
 
@@ -25,15 +17,27 @@ if (!CVES_COLLECTION_NAME) {
 
 app.use(closeDbConnectionAfterReq);
 
-// router.get(
-//   "/hashPassword",
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(req.cookies);
-//     const password = req.query.password as string;
-//     const hashPassword = await hashingPassword(password);
-//     res.json({ hashPassword });
-//   }
-// );
+router.get(
+  "/getall",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const client = await connectToDatabase();
+      console.log("CVES_COLLECTION_NAME", CVES_COLLECTION_NAME);
+
+      const data = await client
+        ?.collection<DBCve>(CVES_COLLECTION_NAME)
+        .find()
+        .toArray();
+
+      res.status(200).json(data);
+      // console.log("data", data);
+    } catch (error) {
+      res.status(400).json({ response: "there is an error", error });
+    } finally {
+      closeDatabaseConnection();
+    }
+  }
+);
 
 function isCveInput(obj: any): obj is cveInput {
   return (
@@ -85,7 +89,7 @@ router.post(
         detection_methods: cveInput.detection_methods,
         tests_to_run: cveInput.tests_to_run,
       };
-      console.log("uscv", insertCve);
+      console.log("cve", insertCve);
 
       const data = await client
         ?.collection<DBCve>(CVES_COLLECTION_NAME)
