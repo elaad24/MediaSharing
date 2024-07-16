@@ -207,6 +207,40 @@ router.get(
       }
     } catch (error) {
       console.error(error);
+      res.status(401).json(error);
+    } finally {
+      closeDatabaseConnection();
+    }
+  }
+);
+// retrieving the playlist from database by playlistName (the header of the playlist need to be in db header)
+router.get(
+  "/getPlaylistFromDb",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { playlistName } = req.query;
+      if (!playlistName || typeof playlistName !== "string") {
+        throw error("no playlistname");
+      }
+      const client = await connectToDatabase();
+
+      const gettingPlaylistName: DBSpotifyPlaylist = {
+        playlistName: playlistName,
+      };
+      console.log("playlistRegister", gettingPlaylistName);
+
+      const data = await client
+        ?.collection<DBSpotifyPlaylistId>(SPOTIFY_COLLECTION_NAME)
+        .findOne(gettingPlaylistName);
+      if (data) {
+        console.log("data", data);
+        res.status(200).json(data);
+      } else {
+        throw error("no data");
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(401).json(error);
     } finally {
       closeDatabaseConnection();
     }
