@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response, response } from "express";
 import express from "express";
 const router = express.Router();
 const app = express();
@@ -19,8 +19,17 @@ import {
   uploadFileToGridFs,
 } from "../../utils/database";
 import { connectToDatabase, getGridFSBucket } from "../../config/db";
+import { DBCve } from "../../interfaces/cve";
+import { mediator } from "../cve/mediator";
 
 dotenv.config();
+
+const CVES_COLLECTION_NAME = process.env.CVES_COLLECTION_NAME;
+if (!CVES_COLLECTION_NAME) {
+  throw new Error(
+    "CVES_COLLECTION_NAME is not defined in the environment variables"
+  );
+}
 
 //! its crush the app when run - need to check why
 
@@ -75,12 +84,35 @@ router.get(
                 youtubeSongId
               );
               if (downloadUrl) {
-                const url = await downloadFileToServer(downloadUrl);
-                if (url?.fileName) {
+                const filePromise = await downloadFileToServer(downloadUrl);
+                //  checkFile
+                //! need to test it with "bad file"
+                const databaseCves = await client
+                  ?.collection<DBCve>(CVES_COLLECTION_NAME)
+                  .find()
+                  .toArray();
+
+                const tests_to_run = databaseCves.flatMap(
+                  (cve) => cve.tests_to_run
+                );
+                if (filePromise?.fileName) {
+                  const isFileClean = await mediator(
+                    tests_to_run,
+                    res,
+                    `./src/downloadFiles/${filePromise.fileName}`
+                  );
+                  if (
+                    isFileClean !== undefined &&
+                    !isFileClean.answer == false
+                  ) {
+                    throw error(
+                      `file has found and dangerous by  ${isFileClean.cve}, ${isFileClean.text} , description : ${isFileClean.reason}`
+                    );
+                  }
                   if (bucket) {
                     await uploadFileToGridFs(
                       bucket,
-                      url.fileName,
+                      filePromise.fileName,
                       youtubeSongId
                     );
                   }
@@ -102,10 +134,14 @@ router.get(
         if (youtubeSongId) {
           const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
           if (downloadUrl) {
-            const url = await downloadFileToServer(downloadUrl);
-            if (url?.fileName) {
+            const filePromise = await downloadFileToServer(downloadUrl);
+            if (filePromise?.fileName) {
               if (bucket) {
-                await uploadFileToGridFs(bucket, url.fileName, youtubeSongId);
+                await uploadFileToGridFs(
+                  bucket,
+                  filePromise.fileName,
+                  youtubeSongId
+                );
               }
             }
           }
@@ -118,6 +154,7 @@ router.get(
       }
     } catch (error) {
       console.error(error);
+      res.status(400).json(error);
     }
   }
 );

@@ -8,7 +8,6 @@ import {
   isSuspiciousUrl,
   isValidFrameHeader,
 } from "./cvesHelper";
-import { rejects } from "assert";
 
 // if it true so its okay ,
 //! if false then its a problem
