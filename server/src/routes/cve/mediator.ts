@@ -10,8 +10,6 @@ import {
   file_path_interface,
 } from "../../utils/cvesFunctions";
 
-type FunctionType = (args: FunctionParams) => Promise<void>;
-
 type FunctionParams =
   | check_abnormal_small_file_size_interface
   | file_path_interface;
@@ -35,21 +33,26 @@ const functionHashMap: {
 };
 
 export const mediator = async (
-  cveData: DBCve[],
+  functionToCall: string[],
   responses: Response,
   filepath: string
 ) => {
-  const functionToCall: string[] = cveData.flatMap((item) => item.tests_to_run);
+  let answer;
   for (let i = 0; i < functionToCall.length; i++) {
     const func = functionHashMap[functionToCall[i]];
     if (functionToCall[i] == "check_abnormal_small_file_size") {
-      await func({ response: responses });
+      answer = await func({ response: responses });
     } else if (
       functionToCall[i] == "check_url_tags" ||
       functionToCall[i] == "check_for_unexpected_tags" ||
       functionToCall[i] == "analyze_mp3_frames"
     ) {
-      await func({ filepath });
+      answer = await func({ filepath });
+    }
+
+    if (answer?.answer == false) {
+      return answer;
     }
   }
+  return answer;
 };
