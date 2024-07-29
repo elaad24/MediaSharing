@@ -52,11 +52,15 @@ export const check_abnormal_small_file_size = ({
   });
 };
 
+interface ICommonTagsResult {
+  [key: string]: any; // Adjust the type from `any` to something more specific if possible
+}
+
 export const check_url_tags = async ({
   filepath,
 }: file_path_interface): Promise<cveCheckerResponse> => {
   try {
-    const metadata = await parseFile(filepath);
+    const metadata: ICommonTagsResult = await parseFile(filepath);
     // ID3 tag that are specifically associated with URLs in MP3 metadata
     const urlTags = ["WXXX", "WOAR", "WOAS", "WOAF"];
     let suspiciousUrls: string[] = [];

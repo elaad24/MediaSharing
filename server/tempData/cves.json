@@ -1,0 +1,56 @@
+{
+  "mp3_vulnerabilities": [
+    {
+      "cve_id": "CVE-2017-15288",
+      "description": "Heap-based buffer overflow in the _url_canon_local_path function in url.c in libmp3lame.a in LAME 3.99.5 allows remote attackers to execute arbitrary code via a crafted MP3 file.",
+      "severity": "Critical",
+      "cvss_score": "9.8",
+      "indicators": ["suspicious URL patterns", "abnormal file size"],
+      "mitigation": [
+        "Update to the latest version of LAME",
+        "Use intrusion detection systems"
+      ],
+      "references": ["https://nvd.nist.gov/vuln/detail/CVE-2017-15288"],
+      "affected_software": ["LAME 3.99.5"],
+      "detection_methods": [
+        "Check for abnormal file sizes",
+        "Inspect URL patterns in MP3 metadata"
+      ],
+      "function_validation": ["check_abnormal_small_file_size"],
+      "tests_to_run": ["check_abnormal_small_file_size", "check_url_tags"]
+    },
+    {
+      "cve_id": "CVE-2019-12874",
+      "description": "An issue was discovered in Mpg123 1.25.10 and 1.25.11. There is a heap-based buffer overflow in the function convert_latin1_to_utf8() in libmpg123/id3.c.",
+      "severity": "High",
+      "cvss_score": "8.8",
+      "indicators": ["large metadata size", "unexpected ID3 tags"],
+      "mitigation": [
+        "Update to the latest version of Mpg123",
+        "Validate input files"
+      ],
+      "references": ["https://nvd.nist.gov/vuln/detail/CVE-2019-12874"],
+      "affected_software": ["Mpg123 1.25.10", "Mpg123 1.25.11"],
+      "detection_methods": [
+        "Check ID3 tags for unexpected values",
+        "Inspect metadata size"
+      ],
+      "tests_to_run": ["check_for_unexpected_tags"]
+    },
+    {
+      "cve_id": "CVE-2020-21674",
+      "description": "A heap-based buffer overflow vulnerability in the `read_frame_header` function in layer3.c in mp3gain 1.5.2 allows attackers to cause a denial of service via a crafted MP3 file.",
+      "severity": "High",
+      "cvss_score": "7.5",
+      "indicators": ["unexpected frame header values", "abnormal frame size"],
+      "mitigation": [
+        "Update to the latest version of mp3gain",
+        "Use file scanning tools"
+      ],
+      "references": ["https://nvd.nist.gov/vuln/detail/CVE-2020-21674"],
+      "affected_software": ["mp3gain 1.5.2"],
+      "detection_methods": ["Check frame header values", "Inspect frame sizes"],
+      "tests_to_run": ["analyze_mp3_frames"]
+    }
+  ]
+}
