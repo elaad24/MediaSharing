@@ -1,5 +1,4 @@
 import { Response } from "express";
-import { parseFile } from "music-metadata";
 import * as fs from "fs";
 import {
   calculateFrameSize,
@@ -60,6 +59,8 @@ export const check_url_tags = async ({
   filepath,
 }: file_path_interface): Promise<cveCheckerResponse> => {
   try {
+    const { parseFile } = await import("music-metadata");
+
     const metadata: ICommonTagsResult = await parseFile(filepath);
     // ID3 tag that are specifically associated with URLs in MP3 metadata
     const urlTags = ["WXXX", "WOAR", "WOAS", "WOAF"];
@@ -101,6 +102,7 @@ export const check_for_unexpected_tags = async ({
   filepath,
 }: file_path_interface): Promise<cveCheckerResponse> => {
   try {
+    const { parseFile } = await import("music-metadata");
     const metadata = await parseFile(filepath);
     const maxMetadataSize = 1024 * 10;
     const metadataSize = Buffer.byteLength(JSON.stringify(metadata.common));
@@ -120,7 +122,6 @@ export const check_for_unexpected_tags = async ({
     }
 
     // check for unexpected ID3
-
     const allowedTags = [
       "TIT2",
       "TPE1",

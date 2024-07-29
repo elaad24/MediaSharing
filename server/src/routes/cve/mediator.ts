@@ -20,7 +20,6 @@ const functionHashMap: {
   check_abnormal_small_file_size: check_abnormal_small_file_size as (
     params: FunctionParams
   ) => Promise<cveCheckerResponse>,
-
   check_url_tags: check_url_tags as (
     params: FunctionParams
   ) => Promise<cveCheckerResponse>,
