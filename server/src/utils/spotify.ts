@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders, AxiosRequestHeaders } from "axios";
-import { SpotifyPlaylist } from "../interfaces/spotify";
+import { SpotifyPlaylist } from "../interfaces/spotify.js";
 import { error } from "console";
-import globalVariable from "../general/globalVariable";
+import globalVariable from "../general/globalVariable.js";
 export const getAccessToken = async (
   SPOTIFY_CLIENT_ID: string,
   SPOTIFY_CLIENT_SECRET: string
@@ -138,4 +138,12 @@ export const getYoutubeFileDownloadLink = async (
   } catch (error) {
     console.error(error);
   }
+};
+/**
+ *
+ * just concat with youtube url to new string
+ * */
+export const returnYouTubeLink = (youtubeId) => {
+  const youtubeLink = `${globalVariable.youtubeVideoBaseLink}${youtubeId}`;
+  return youtubeLink;
 };

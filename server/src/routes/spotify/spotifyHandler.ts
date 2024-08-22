@@ -8,15 +8,15 @@ import {
   findVideoId,
   getAccessToken,
   getSpotifyPlayListById,
-} from "../../utils/spotify";
+} from "../../utils/spotify.js";
 import { error } from "console";
-import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
+import { closeDatabaseConnection, connectToDatabase } from "../../config/db.js";
 import {
   DBSpotifyPlaylist,
   DBSpotifyPlaylistData,
   DBSpotifyPlaylistId,
   SpotifyPlaylist,
-} from "../../interfaces/spotify";
+} from "../../interfaces/spotify.js";
 
 interface AuthOptions {
   url: string;

@@ -4,8 +4,11 @@ import { MongoClient, GridFSBucket, Db, ObjectId } from "mongodb";
 import { closeDatabaseConnection, connectToDatabase } from "../config/db";
 import { promises } from "dns";
 import { Response } from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const path = require("path");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const downloadFileToServer = async (
   url: string
@@ -60,7 +63,10 @@ export async function uploadFileToGridFs(
 ) {
   try {
     if (bucket) {
-      const filePath = path.join(__dirname, `../downloadFiles/${filename}`);
+      const filePath = path.join(
+        __dirname,
+        `../../src/downloadFiles/${filename}`
+      );
       const readStream = fs.createReadStream(filePath);
       const uploadStream = bucket.openUploadStream(path.basename(filePath), {
         metadata: { youtubeID: youtubeID },
