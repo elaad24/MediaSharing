@@ -50,7 +50,14 @@ export function getBitrate(
     "0-3": [8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160], // Version 2.5, Layer 3
   };
 
-  const key = `${versionBits}-${layerBits}`;
+  // Map the versionBits to actual MPEG version used in the key
+  const versionMap = {
+    3: "1", // MPEG Version 1
+    2: "2", // MPEG Version 2
+    0: "0", // MPEG Version 2.5
+  };
+
+  const key = `${versionMap[versionBits]}-${layerBits}`;
   return bitrateTable[key] ? bitrateTable[key][bitrateBits - 1] * 1000 : 0;
 }
 

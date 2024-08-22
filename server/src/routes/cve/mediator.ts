@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { DBCve } from "../../interfaces/cve";
+import { DBCve } from "../../interfaces/cve.js";
 import {
   analyze_mp3_frames,
   check_abnormal_small_file_size,
@@ -8,7 +8,7 @@ import {
   check_url_tags,
   cveCheckerResponse,
   file_path_interface,
-} from "../../utils/cvesFunctions";
+} from "../../utils/cvesFunctions.js";
 
 type FunctionParams =
   | check_abnormal_small_file_size_interface
@@ -39,8 +39,9 @@ export const mediator = async (
   let answer;
   for (let i = 0; i < functionToCall.length; i++) {
     const func = functionHashMap[functionToCall[i]];
+    console.log("functionToCall[i]", functionToCall[i]);
     if (functionToCall[i] == "check_abnormal_small_file_size") {
-      answer = await func({ response: responses });
+      answer = await func({ filepath });
     } else if (
       functionToCall[i] == "check_url_tags" ||
       functionToCall[i] == "check_for_unexpected_tags" ||

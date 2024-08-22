@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import express from "express";
-import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
+import { closeDatabaseConnection, connectToDatabase } from "../../config/db.js";
 const router = express.Router();
 const app = express();
 import dotenv from "dotenv";
-import { closeDbConnectionAfterReq } from "../../middleware/closeDbConnection";
-import { DBCve, cveInput } from "../../interfaces/cve";
+import { closeDbConnectionAfterReq } from "../../middleware/closeDbConnection.js";
+import { DBCve, cveInput } from "../../interfaces/cve.js";
 
 dotenv.config();
 const CVES_COLLECTION_NAME = process.env.CVES_COLLECTION_NAME;

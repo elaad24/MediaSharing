@@ -6,7 +6,7 @@ import {
   getSampleRate,
   isSuspiciousUrl,
   isValidFrameHeader,
-} from "./cvesHelper";
+} from "./cvesHelper.js";
 
 // if it true so its okay ,
 //! if false then its a problem
@@ -18,7 +18,7 @@ export interface cveCheckerResponse {
   cve: string;
 }
 export interface check_abnormal_small_file_size_interface {
-  response: Response;
+  filepath: string;
 }
 
 export interface file_path_interface {
@@ -26,13 +26,13 @@ export interface file_path_interface {
 }
 
 export const check_abnormal_small_file_size = ({
-  response,
+  filepath,
 }: check_abnormal_small_file_size_interface): Promise<cveCheckerResponse> => {
   return new Promise((resolve, reject) => {
-    const responseHeaders = response.getHeaders();
-    const ans =
-      responseHeaders["content-length"] != undefined &&
-      Number(responseHeaders["content-length"]) > 10240;
+    const stats = fs.statSync(filepath);
+
+    const ans = stats.size > 10240;
+
     if (ans) {
       return resolve({
         answer: ans,
@@ -59,9 +59,8 @@ export const check_url_tags = async ({
   filepath,
 }: file_path_interface): Promise<cveCheckerResponse> => {
   try {
-    const { parseFile } = await import("music-metadata");
-
-    const metadata: ICommonTagsResult = await parseFile(filepath);
+    const musicMetadata = await import("music-metadata");
+    const metadata: ICommonTagsResult = await musicMetadata.parseFile(filepath);
     // ID3 tag that are specifically associated with URLs in MP3 metadata
     const urlTags = ["WXXX", "WOAR", "WOAS", "WOAF"];
     let suspiciousUrls: string[] = [];
@@ -102,8 +101,8 @@ export const check_for_unexpected_tags = async ({
   filepath,
 }: file_path_interface): Promise<cveCheckerResponse> => {
   try {
-    const { parseFile } = await import("music-metadata");
-    const metadata = await parseFile(filepath);
+    const musicMetadata = await import("music-metadata");
+    const metadata = await musicMetadata.parseFile(filepath);
     const maxMetadataSize = 1024 * 10;
     const metadataSize = Buffer.byteLength(JSON.stringify(metadata.common));
     // check for matadata size
@@ -125,6 +124,7 @@ export const check_for_unexpected_tags = async ({
     const allowedTags = [
       "TIT2",
       "TPE1",
+      "TPE2",
       "TALB",
       "TRCK",
       "TYER",
@@ -135,7 +135,94 @@ export const check_for_unexpected_tags = async ({
       "WOAR",
       "WOAS",
       "WOAF",
+      "TPOS",
+      "TENC",
+      "TLEN",
+      "TSIZ",
+      "USLT",
+      "APIC",
+      "TIT1",
+      "TIT3",
+      "TEXT",
+      "TCOM",
+      "TMED",
+      "TOAL",
+      "TOPE",
+      "TPUB",
+      "TKEY",
+      "TORY",
+      "TSRC",
+      "TDRC",
+      "TDRL",
+      "TDTG",
+      "TPE3",
+      "TOFN",
+      "TOLY",
+      "TSSE",
+      "TDAT",
+      "TIME",
+      "TRDA",
+      "TMOO",
+      "TBPM",
+      "TDEN",
+      "TIPL",
+      "TMCL",
+      "MLLT",
+      "PCNT",
+      "POPM",
+      "RBUF",
+      "RVAD",
+      "RVA2",
+      "RVRB",
+      "SYLT",
+      "SYTC",
+      "USER",
+      "GEOB",
+      "LINK",
+      "POSS",
+      "EQUA",
+      "EQU2",
+      "COMR",
+      "ENCR",
+      "GRID",
+      "SIGN",
+      "PRIV",
+      "MCDI",
+      "ENCODING SETTINGS",
+      "LAME",
+      "ENCODEDBY",
+      "ENCODERSETTINGS",
+      "MIME",
+      "ENCODEDFORMAT",
+      "ENCODEROPTIONS",
+      "VBR",
+      "CBR",
+      "RATING",
+      "PLAYCOUNT",
+      "ALBUMARTIST",
+      "COMPILATION",
+      "GENRE",
+      "DISCNUMBER",
+      "RELEASETIME",
+      "ARTIST",
+      "TITLE",
+      "ALBUM",
+      "LYRICS",
+      "MOVEMENTNAME",
+      "MOVEMENTNUMBER",
+      "MOVEMENTTOTAL",
+      "ORIGINALYEAR",
+      "ISRC",
+      "GROUPING",
+      "PUBLISHER",
+      "COPYRIGHT",
+      "URL",
+      "track",
+      "disk",
+      "movementIndex",
+      "encodersettings",
     ];
+
     const foundTags = Object.keys(metadata.common);
     const unexpectedTags = foundTags.filter(
       (tag) => !allowedTags.includes(tag)
@@ -159,6 +246,7 @@ export const check_for_unexpected_tags = async ({
       };
     }
   } catch (error) {
+    console.error(error);
     return {
       answer: false,
       cve: "CVE-2019-12874",
