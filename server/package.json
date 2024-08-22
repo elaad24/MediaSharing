@@ -2,8 +2,9 @@
   "name": "server",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/app.ts",
+    "start": "nodemon",
     "test": "jest"
   },
   "dependencies": {
