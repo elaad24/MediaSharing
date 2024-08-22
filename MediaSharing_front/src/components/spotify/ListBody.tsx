@@ -12,19 +12,20 @@ export default function ListBody({ listData }: SpotifyList) {
     artists: string[]
   ) => {
     const response = await downloadYoutubeSong(songName, artists, itemID);
-    // const response = await axios.get(`${server_url}/youtube/try2`);
 
-    // grabing the url from the api and open the window for download
+    // garbing the url from the api and open the window for download
     if (
       response.headers["content-type"]
         ?.toLocaleString()
         .search("application/json") != -1
     ) {
+      let responseData;
       if (response.data) {
-        const responseData = JSON.parse(
-          new TextDecoder().decode(response.data)
-        );
-        if (response.data) {
+        console.log("here in response data ", response.data);
+        responseData = JSON.parse(new TextDecoder().decode(response.data));
+        console.log("responseData", responseData);
+
+        if (responseData.data != undefined) {
           window.open(responseData.data, "_blank");
         }
       }
@@ -91,7 +92,7 @@ export default function ListBody({ listData }: SpotifyList) {
 
                 <div className="artists">
                   {item.track.artists.map((artist, index) => (
-                    <div>
+                    <div key={`${artist.name[0]}.${index}`}>
                       {artist.name}
                       {index < item.track.artists.length - 1 && " X"}
                     </div>

@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import Container from "./components/common/Container";
 import Login from "./pages/Login/Login";
 import Signup from "./pages/Signup/SignUp";
@@ -17,6 +17,7 @@ function App() {
       <Route path="songs" element={<Songs />} />
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<Signup />} />
+      <Route path="*" element={<Navigate to={"login"} replace />} />
     </Routes>
   );
 }
