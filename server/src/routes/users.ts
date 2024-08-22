@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-var express = require("express");
+import express from "express";
 var router = express.Router();
 
 /* GET users listing. */

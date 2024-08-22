@@ -5,14 +5,14 @@ import {
   generateAccessToken,
   generateRefreshToken,
   hashingPassword,
-} from "../../utils/authHelper";
+} from "../../utils/authHelper.js";
 import { error, log } from "console";
-import { closeDatabaseConnection, connectToDatabase } from "../../config/db";
+import { closeDatabaseConnection, connectToDatabase } from "../../config/db.js";
 const router = express.Router();
 const app = express();
 import dotenv from "dotenv";
-import { DBUser } from "../../interfaces/user";
-import { closeDbConnectionAfterReq } from "../../middleware/closeDbConnection";
+import { DBUser } from "../../interfaces/user.js";
+import { closeDbConnectionAfterReq } from "../../middleware/closeDbConnection.js";
 
 dotenv.config();
 const USER_COLLECTION_NAME = process.env.USER_COLLECTION_NAME as string;
