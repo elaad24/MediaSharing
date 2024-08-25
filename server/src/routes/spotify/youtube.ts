@@ -13,6 +13,7 @@ import {
 } from "../../utils/spotify.js";
 import { error } from "console";
 import {
+  deleteFile,
   downloadFileToServer,
   isFileExistInGridFs,
   sendFileFromGridFs,
@@ -21,6 +22,7 @@ import {
 import { connectToDatabase, getGridFSBucket } from "../../config/db.js";
 import { DBCve } from "../../interfaces/cve.js";
 import { mediator } from "../cve/mediator.js";
+import * as fs from "fs";
 
 dotenv.config();
 
@@ -59,9 +61,10 @@ router.get(
 router.get(
   "/DownloadSong",
   async (req: Request, res: Response, next: NextFunction) => {
+    let fileName = null;
     try {
       const { songName, songArtist, songId } = req.query;
-
+      let isFileInDB = null;
       if (
         (typeof songId !== "string" ||
           songId == "undefined" ||
@@ -87,6 +90,8 @@ router.get(
           const fileInfo = await isFileExistInGridFs(client, youtubeSongId);
           if (fileInfo) {
             await sendFileFromGridFs(bucket, fileInfo._id, res);
+          } else {
+            isFileInDB = false;
           }
         }
       } else {
@@ -96,14 +101,17 @@ router.get(
       }
 
       if (client && bucket) {
-        const fileInfo = await isFileExistInGridFs(client, youtubeSongId);
-        if (fileInfo) {
-          await sendFileFromGridFs(bucket, fileInfo._id, res);
+        if (isFileInDB !== false) {
+          const fileInfo = await isFileExistInGridFs(client, youtubeSongId);
+          if (fileInfo) {
+            await sendFileFromGridFs(bucket, fileInfo._id, res);
+          }
         } else {
           if (youtubeSongId) {
             const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
             if (downloadUrl) {
               const filePromise = await downloadFileToServer(downloadUrl);
+              fileName = filePromise.fileName;
               //  checkFile
               //! need to test it with "bad file"
               const databaseCves = await client
@@ -145,6 +153,9 @@ router.get(
       }
     } catch (error) {
       console.error(error);
+      if (fs.existsSync(`./src/downloadFiles/${fileName}`)) {
+        await deleteFile(`./src/downloadFiles/${fileName}`);
+      }
       res.status(400).json(error);
     }
   }
