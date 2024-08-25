@@ -35,18 +35,27 @@ export const downloadYoutubeSong = async (
   if (songId != undefined) {
     querySongId = `&songId=${songId}`;
   }
+  try {
+    const querySongName = `songName=${songName}`;
+    const songArtistsName = `&songArtist=${artistString}`;
 
-  const querySongName = `songName=${songName}`;
-  const songArtistsName = `&songArtist=${artistString}`;
+    const query = `${querySongName}${songArtistsName}${querySongId}`;
 
-  const query = `${querySongName}${songArtistsName}${querySongId}`;
+    const ans = await axios.get(`${server_url}/youtube/DownloadSong?${query}`, {
+      withCredentials: true,
+      responseType: "arraybuffer",
+    });
 
-  const ans = await axios.get(`${server_url}/youtube/DownloadSong?${query}`, {
-    withCredentials: true,
-    responseType: "arraybuffer",
-  });
+    return ans;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      const errorText = new TextDecoder().decode(error.response.data);
+      console.log("in spotify api ,", errorText);
+      return errorText;
+    }
 
-  return ans;
+    return error;
+  }
 };
 
 // export const login = (

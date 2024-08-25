@@ -17954,7 +17954,7 @@
           "popularity": 94,
           "uri": "spotify:track:6AI3ezQ4o3HUoP6Dhudph3",
           "is_local": false,
-          "youtubeId": "blVWjRTwy0M"
+          "youtubeId": null
         },
         "video_thumbnail": {
           "url": null
