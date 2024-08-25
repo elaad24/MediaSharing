@@ -30,7 +30,6 @@ router.get(
         .toArray();
 
       res.status(200).json(data);
-      // console.log("data", data);
     } catch (error) {
       res.status(400).json({ response: "there is an error", error });
     } finally {

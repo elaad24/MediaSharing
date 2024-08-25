@@ -130,7 +130,6 @@ router.post(
           upsert: true,
         });
 
-      console.log("data", data);
       res.status(201).json({ text: "added playlist", playlistName });
     } catch (error) {
       console.error(error);
@@ -153,13 +152,11 @@ router.post(
         spotifyId: spotifyId,
         timeStamp: Date.now(),
       };
-      console.log("playlistRegister", gettingPlaylistName);
 
       const data = await client
         ?.collection<DBSpotifyPlaylistId>(SPOTIFY_COLLECTION_NAME)
         .insertOne(gettingPlaylistName);
 
-      console.log("data", data);
       res.status(201).json({ text: "added playlist", playlistName });
     } catch (error) {
       console.error(error);
@@ -246,14 +243,5 @@ router.get(
     }
   }
 );
-
-// router.get("/test", async (req: Request, res: Response, next: NextFunction) => {
-//   try {
-//     const a = await getYoutubeFileDownloadLink("2FNJNnV9DxM");
-//     res.status(200).send(a);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// });
 
 export default router;

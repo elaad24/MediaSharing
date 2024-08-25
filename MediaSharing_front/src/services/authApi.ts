@@ -24,7 +24,6 @@ export const test = async () => {
       withCredentials: true,
     }
   );
-  console.log(data);
 
   return data;
 };

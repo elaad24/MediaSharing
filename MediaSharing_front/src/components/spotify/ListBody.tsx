@@ -28,19 +28,17 @@ export default function ListBody({ listData }: SpotifyList) {
         setModalData(JSON.parse(response));
         setActiveSongName(songName);
       }
-      console.log("response", response);
+
       // garbing the url from the api and open the window for download
       if (
         response.headers["content-type"]
           ?.toLocaleString()
           .search("application/json") != -1
       ) {
-        console.log("!!!!!!");
         let responseData;
         if (response.data) {
-          console.log("here in response data ", response.data);
           responseData = JSON.parse(new TextDecoder().decode(response.data));
-          console.log("responseData", responseData);
+
           if (responseData.data != undefined) {
             window.open(responseData.data, "_blank");
           }
@@ -50,8 +48,6 @@ export default function ListBody({ listData }: SpotifyList) {
           ?.toLocaleString()
           .search("application/octet-stream") != -1
       ) {
-        console.log("@@@@@@@");
-
         const blob = new Blob([response.data], {
           type: "application/octet-stream",
         });
@@ -62,20 +58,15 @@ export default function ListBody({ listData }: SpotifyList) {
 
         const contentDisposition = response.headers["content-disposition"];
         if (contentDisposition) {
-          console.log("#####");
-
           const filenameMatch = contentDisposition.match(
             /filename\*=UTF-8''(.+)$/
           );
           if (filenameMatch && filenameMatch.length === 2) {
-            console.log("%%%%%%");
-
             const filename = decodeURIComponent(filenameMatch[1]);
             link.setAttribute("download", filename);
           }
         } else {
           link.setAttribute("download", "file");
-          console.log("^^^^^");
         }
 
         document.body.appendChild(link);
@@ -84,8 +75,6 @@ export default function ListBody({ listData }: SpotifyList) {
         window.URL.revokeObjectURL(url);
       }
     } catch (err: any) {
-      console.log("error at ", err);
-
       setModalIsOpen(true);
     }
   };
@@ -139,16 +128,7 @@ export default function ListBody({ listData }: SpotifyList) {
                 </div>
               </div>
             </div>
-            <div
-              className="download"
-              // onClick={() =>
-              //   getYoutubeId(
-              //     item.track.id,
-              //     item.track.name,
-              //     item.track.artists.map((i) => i.name)
-              //   )
-              //   }
-            >
+            <div className="download">
               {item.track.youtubeId ? (
                 <a
                   href={`${youtubeBaseLink}${item.track.youtubeId}`}

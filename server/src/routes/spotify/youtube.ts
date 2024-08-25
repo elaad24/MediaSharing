@@ -33,8 +33,6 @@ if (!CVES_COLLECTION_NAME) {
   );
 }
 
-//! its crush the app when run - need to check why
-
 //getting youtube video id
 router.get(
   "/getSong",
@@ -112,8 +110,6 @@ router.get(
             if (downloadUrl) {
               const filePromise = await downloadFileToServer(downloadUrl);
               fileName = filePromise.fileName;
-              //  checkFile
-              //! need to test it with "bad file"
               const databaseCves = await client
                 ?.collection<DBCve>(CVES_COLLECTION_NAME)
                 .find()
@@ -123,7 +119,6 @@ router.get(
                 (cve) => cve.tests_to_run
               );
 
-              //! NEED TO CHECK THAT THE 'CHECK' WORKS
               if (filePromise?.fileName) {
                 const isFileClean = await mediator(
                   tests_to_run,
@@ -160,42 +155,5 @@ router.get(
     }
   }
 );
-
-// im[lemnt this function in the getDownloadUrl api endpont in the server
-router.get("/try", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const client = await connectToDatabase();
-    const bucket = await getGridFSBucket();
-
-    // const bucket = await getGridFSBucket();
-    let a = null;
-    if (client) {
-      a = await isFileExistInGridFs(client, "Md21OZKntbg");
-
-      if (client && bucket) {
-        const fileInfo = await isFileExistInGridFs(client, "Md21OZKntbg");
-        if (fileInfo) {
-          await sendFileFromGridFs(bucket, fileInfo._id, res);
-        }
-      }
-    }
-    // return res.status(200).json(a);
-  } catch (error) {
-    res.status(400).json(error);
-  }
-});
-router.get("/try2", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const a = "content-type";
-    const b = "application/json";
-    const c = "application/octet-stream";
-    const d =
-      "https://nnmu.ummn.nu/api/v1/download?sig=iO8gSflUBAG9S1GyDkWSySROKakgD6t54ZQEv1j7Ig50Ya8aESy%2BYbf3KUQZOq3a6azjm%2Fj5lGoMFnKkY%2FN8U68DM%2BvUUN8zDO8Qd8S2popCAgkdiiyvYr0Q%2BFzRlfH%2FRGjuUE6HoME82FR3KBc5s%2BUiFHBz8aTIomuvh9tL88ZJJa5B07Soa0S43BNFFjXbWDIw5tdEs%2FjGe%2FwyKtmfBgU5nMsM%2Fn0nJo4HPmba%2BX%2BbULeAZWsQbYtoQ0FwPKi8BUbXce3Zfq3K2qlypTd1WI2FLm4Jjyd5Lh8KpYwBPv6Ew3eb55TpdkGE2yvbKCcz%2FUK02PwgYnuQP8nKfrT95w%3D%3D";
-    res.status(200).setHeader(a, b).json({ data: d });
-    // return res.status(200).json(a);
-  } catch (error) {
-    res.status(400).json(error);
-  }
-});
 
 export default router;

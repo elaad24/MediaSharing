@@ -39,7 +39,6 @@ export const mediator = async (
   let answer;
   for (let i = 0; i < functionToCall.length; i++) {
     const func = functionHashMap[functionToCall[i]];
-    console.log("functionToCall[i]", functionToCall[i]);
     if (functionToCall[i] == "check_abnormal_small_file_size") {
       answer = await func({ filepath });
     } else if (

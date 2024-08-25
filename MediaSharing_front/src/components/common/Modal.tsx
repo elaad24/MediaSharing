@@ -1,7 +1,6 @@
 import React, { ReactNode } from "react";
 import ReactDOM from "react-dom";
 
-// Define the props type
 interface ModalProps {
   children: ReactNode;
 }
@@ -23,11 +22,8 @@ const Modal: React.FC<ModalProps> = ({ children }) => {
         top: "25%",
         width: "30rem",
         height: "20vh",
-        backgroundColor: "teal",
         display: "flex",
         flexDirection: "column",
-        // alignItems: "center",
-        border: "2px solid black",
       }}
     >
       {children}

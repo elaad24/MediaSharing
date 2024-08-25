@@ -27,9 +27,7 @@ export default function Login() {
           userName: formData.userName,
           password: formData.password,
         });
-        console.log("====================================");
-        console.log("data", data);
-        console.log("====================================");
+
         if (!data.accessToken) {
           alert(1);
           throw "error happened";
