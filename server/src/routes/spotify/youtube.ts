@@ -90,48 +90,58 @@ router.get(
           }
         }
       } else {
-        //!need to work on this ooption (basicly copy pase the first part )
         if (typeof songName === "string" && typeof songArtist === "string") {
           youtubeSongId = await findVideoId(songName, songArtist);
         }
       }
 
-      if (youtubeSongId) {
-        const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
-        if (downloadUrl) {
-          const filePromise = await downloadFileToServer(downloadUrl);
-          //  checkFile
-          //! need to test it with "bad file"
-          const databaseCves = await client
-            ?.collection<DBCve>(CVES_COLLECTION_NAME)
-            .find()
-            .toArray();
+      if (client && bucket) {
+        const fileInfo = await isFileExistInGridFs(client, youtubeSongId);
+        if (fileInfo) {
+          await sendFileFromGridFs(bucket, fileInfo._id, res);
+        } else {
+          if (youtubeSongId) {
+            const downloadUrl = await getYoutubeFileDownloadLink(youtubeSongId);
+            if (downloadUrl) {
+              const filePromise = await downloadFileToServer(downloadUrl);
+              //  checkFile
+              //! need to test it with "bad file"
+              const databaseCves = await client
+                ?.collection<DBCve>(CVES_COLLECTION_NAME)
+                .find()
+                .toArray();
 
-          const tests_to_run = databaseCves.flatMap((cve) => cve.tests_to_run);
-
-          //! NEED TO CHECK THAT THE 'CHECK' WORKS
-          if (filePromise?.fileName) {
-            const isFileClean = await mediator(
-              tests_to_run,
-              res,
-              `./src/downloadFiles/${filePromise.fileName}`
-            );
-
-            if (isFileClean == undefined || isFileClean.answer == false) {
-              throw error(
-                `file has found and dangerous by  ${isFileClean.cve}, ${isFileClean.text} , description : ${isFileClean.reason}`
+              const tests_to_run = databaseCves.flatMap(
+                (cve) => cve.tests_to_run
               );
+
+              //! NEED TO CHECK THAT THE 'CHECK' WORKS
+              if (filePromise?.fileName) {
+                const isFileClean = await mediator(
+                  tests_to_run,
+                  res,
+                  `./src/downloadFiles/${filePromise.fileName}`
+                );
+
+                if (isFileClean == undefined || isFileClean.answer == false) {
+                  throw error(
+                    `file has found and dangerous by  ${isFileClean.cve}, ${isFileClean.text} , description : ${isFileClean.reason}`
+                  );
+                }
+                if (bucket) {
+                  await uploadFileToGridFs(
+                    bucket,
+                    filePromise.fileName,
+                    youtubeSongId
+                  );
+                }
+              }
             }
-            if (bucket) {
-              await uploadFileToGridFs(
-                bucket,
-                filePromise.fileName,
-                youtubeSongId
-              );
-            }
+            res.status(200).json({ data: downloadUrl });
           }
         }
-        res.status(200).json({ data: downloadUrl });
+      } else {
+        console.error("coudent connect to client db and bucket db ");
       }
     } catch (error) {
       console.error(error);
